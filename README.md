@@ -1,10 +1,11 @@
 # The Art and Science of Modern Delivery: From Factory to Final Mile
 
 ## Context
-In an era where speed, reliability, and sustainability are critical, the efficiency of delivery networks—from factory to supply depot, and ultimately to the end customer—is a cornerstone of global commerce. The rise of e-commerce, automation, and real-time tracking technologies has transformed traditional logistics, pushing businesses to innovate continuously.
-_How can companies optimize their delivery processes to balance cost, technology, and environmental impact while maintaining seamless logistics?_
+In today’s fast-paced world, the efficiency of delivery networks—spanning factories, supply depots, and the final destination—defines the backbone of global commerce. Whether by truck, car, or drone, each link in the chain must operate with precision to meet rising demands for speed, reliability, and sustainability.
+_But how do businesses balance cost and efficiency while ensuring seamless logistics?_
 
-The answer lies in leveraging data-driven strategies: _automation, predictive analytics, and alternative delivery methods_ (such as drones and autonomous vehicles). This project explores the journey of goods through the supply chain and investigates cutting-edge solutions to enhance delivery efficiency, reduce operational costs, and minimize environmental footprints.
+The answer lies in leveraging data-driven strategies: _predictive analysis, real-time tracking and alternative delivery methods_ (such as drones and autonomous vehicles) to transform traditional supply chains.
+This presentation explores the journey of goods—from production lines to doorsteps—and the cutting-edge solutions reshaping the future of delivery.
 
 ## Aim and Objectives
 
@@ -15,7 +16,6 @@ _Optimize the delivery process from factory to customer_ by integrating data ana
 _At this point, objectives may change regarding to the usability of the datasets._
 + _Route Optimization_: Minimize delivery times and maximize cargo load efficiency for each delivery vector (trucks, drones, etc.).
 + _Inventory Management_: Ensure optimal stock levels in supply depots to prevent stockouts and overstocking, aligning with demand forecasts.
-+ _Sustainability Integration_: Explore eco-friendly delivery methods and technologies to reduce carbon emissions, in line with France’s and the EU’s environmental goals.
 
 ## Datasets
 To achieve these objectives, the following datasets could be utilized to build a comprehensive logistics database:
