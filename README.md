@@ -20,8 +20,8 @@ _At this point, objectives may change regarding to the usability of the datasets
 ## Datasets
 To achieve these objectives, the following datasets could be utilized to build a comprehensive logistics database:
 
-+ [Logistics and Supply Chain Dataset]("https://www.kaggle.com/datasets/datasetengineer/logistics-and-supply-chain-dataset") – Focuses on shipment tracking, delivery times, and supply chain efficiency metrics.
-+ [Delivery Logistics Dataset]("https://www.kaggle.com/datasets/ayeshaseherr/delivery-logistics-dataset") – Contains data on delivery routes, timings, and performance indicators, useful for route optimization and last-mile delivery analysis.
-+ [Transportation and Logistics Tracking Dataset]("https://www.kaggle.com/datasets/nicolemachado/transportation-and-logistics-tracking-dataset") – Includes real-time tracking data for shipments, ideal for studying transportation efficiency and delays.
-+ [Amazon Delivery Dataset]("https://www.kaggle.com/datasets/sujalsuthar/amazon-delivery-dataset") – Focuses on last-mile logistics and delivery performance, with insights into delivery times, distances, and customer satisfaction.
-+ [Logistics Shipment On-Time Delivery Classification Dataset]("https://www.kaggle.com/datasets/sezginkaraglle/logistics-dataset") – Useful for predictive modeling to determine on-time delivery probabilities based on historical data.
++ [Logistics and Supply Chain Dataset](https://www.kaggle.com/datasets/datasetengineer/logistics-and-supply-chain-dataset) – Focuses on shipment tracking, delivery times, and supply chain efficiency metrics.
++ [Delivery Logistics Dataset](https://www.kaggle.com/datasets/ayeshaseherr/delivery-logistics-dataset) – Contains data on delivery routes, timings, and performance indicators, useful for route optimization and last-mile delivery analysis.
++ [Transportation and Logistics Tracking Dataset](https://www.kaggle.com/datasets/nicolemachado/transportation-and-logistics-tracking-dataset) – Includes real-time tracking data for shipments, ideal for studying transportation efficiency and delays.
++ [Amazon Delivery Dataset](https://www.kaggle.com/datasets/sujalsuthar/amazon-delivery-dataset) – Focuses on last-mile logistics and delivery performance, with insights into delivery times, distances, and customer satisfaction.
++ [Logistics Shipment On-Time Delivery Classification Dataset](https://www.kaggle.com/datasets/sezginkaraglle/logistics-dataset) – Useful for predictive modeling to determine on-time delivery probabilities based on historical data.
