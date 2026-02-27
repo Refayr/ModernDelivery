@@ -58,13 +58,13 @@
     (
       name: "Katerina Michenina",
       abbr: "KM",
-      email: "katerina.michenina@polytechnique.edu",
+      email: "katerina.michenina@ip-paris.fr",
       //url: "https://synd.hevs.io",
     ),
     (
       name: "Aya Matmata",
       abbr: "AM",
-      email: "aya.matmata@polytechnique.edu",
+      email: "aya.matmata@ip-paris.fr",
       //url: "https://synd.hevs.io",
     ),
     (

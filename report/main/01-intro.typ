@@ -5,7 +5,7 @@
 = Introduction
 
 == Context
-In today’s fast-paced world, the efficiency of delivery networks—spanning factories, supply depots, and the final destination—defines the backbone of global commerce. Whether by truck, car, or drone, each link in the chain must operate with precision to meet rising demands for speed, reliability, and sustainability.
+In today’s fast-paced world, the efficiency of delivery networks—spanning factories, supply depots, and the final destination—defines the backbone of global commerce. Whether by truck, car or drone, each link in the chain must operate with precision to meet rising demands for speed, reliability, and sustainability.
 _But how do businesses balance cost and efficiency while ensuring seamless logistics?_
 
 The answer lies in leveraging data-driven strategies: _predictive analysis, real-time tracking and alternative delivery methods_ (such as drones and autonomous vehicles) to transform traditional supply chains.
