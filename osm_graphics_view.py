@@ -22,7 +22,7 @@ from PySide6.QtSvgWidgets import QGraphicsSvgItem
 from network_access_manager import NetworkAccessManager
 
 # from plotableitem import PlotableItem
-from itemmanager import ItemManager
+# from itemmanager import ItemManager
 
 
 def check_and_extract_numbers(filename):
@@ -42,7 +42,7 @@ def check_and_extract_numbers(filename):
 
 
 class OSMGraphicsView(QGraphicsView):
-    def __init__(self, zoom=2, parent=None):
+    def __init__(self, zoom=2, parent=None, item_manager=None):
         super().__init__(parent)
 
         # Render settings
@@ -96,9 +96,8 @@ class OSMGraphicsView(QGraphicsView):
 
         self.seaportMarkers = []
         self.seaportLabels = []
-        # self.loadSeaports("res/csv/seaports.csv")
 
-        self.item_manager = ItemManager(self)
+        self.item_manager = item_manager
         self.item_manager.items_loaded.connect(self.onItemsLoaded)
         self.item_manager.items_cleared.connect(self.onItemsCleared)
 

@@ -2,6 +2,7 @@ from PySide6.QtCore import QObject, Signal
 from typing import List, Dict, Type
 from abstractitem import AbstractItem
 from connection import Connection
+from ship import Ship
 
 
 class ItemManager(QObject):
@@ -87,7 +88,7 @@ class ItemManager(QObject):
         self.connections.append(connection)
         return connection
 
-    def clear_Connections(self):
+    def clearConnections(self):
         """Efface toutes les connexions"""
         self.connections = []
 

@@ -119,7 +119,7 @@ class ModernDelivery(QApplication):
     def createMainWindow(self):
         """Crée la fenêtre principale"""
 
-        self.mainWindow = MainWindow()
+        self.mainWindow = MainWindow(None, self.item_manager)
         self.mainWindow.setWindowTitle("MapView - ModernDelivery")
 
     def getDbConnector(self):

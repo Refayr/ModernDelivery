@@ -1,3 +1,5 @@
+from PySide6.QtSvgWidgets import QGraphicsSvgItem
+from PySide6.QtWidgets import QGraphicsSimpleTextItem, QGraphicsScene
 from abstractitem import AbstractItem
 from osm_graphics_view import OSMGraphicsView
 
