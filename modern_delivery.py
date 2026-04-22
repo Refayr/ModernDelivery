@@ -77,7 +77,7 @@ class ModernDelivery(QApplication):
         """Affiche le widget de connexion"""
         dialog = DBLoginDialog()
         if dialog.exec() == QDialog.Accepted:
-            creds = dialog.get_credentials()
+            creds = dialog.getCredentials()
             self.connectToDb(creds)
         else:
             # Annulation - quitter ou attendre
@@ -128,7 +128,7 @@ class ModernDelivery(QApplication):
 
     def quitApplication(self):
         """Quitte proprement l'application"""
-        self.disconnect_db()
+        self.disconnectDb()
         self.quit()
 
     def showWindow(self):
