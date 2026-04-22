@@ -13,7 +13,6 @@ class Ship(DBItem, PlotableItem):
         )
 
         # id = imo
-        self.mmsi = mmsi
         self.heading = heading  # ID du port de destination ou None
         self.capacity = capacity
         self.description = desc
@@ -40,8 +39,7 @@ class Ship(DBItem, PlotableItem):
     def fromDbRow(cls, row):
         return cls(
             id=row["imo"],
-            mmsi=row["mmsi"],
-            name=row["name"],
+            name="",
             lat=row["latitude"],
             lon=row["longitude"],
             heading=row.get("heading"),
