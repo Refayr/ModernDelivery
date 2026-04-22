@@ -9,19 +9,6 @@ class DBItem(AbstractItem):
         super().__init__(id, name, lat, lon)
 
     @classmethod
-    def fromCsvRow(cls, row):
-        """Create an item from a CSV row"""
-        lat = cls.parse_coordinate(row.get("latitude", ""))
-        lon = cls.parse_coordinate(row.get("longitude", ""))
-
-        return cls(
-            id=row.get("id", ""),
-            name=row.get("name", ""),
-            lat=lat,
-            lon=lon,
-        )
-
-    @classmethod
     def fromDbRow(cls, row):
         """Create an item from PostGIS"""
         return cls(
@@ -30,22 +17,6 @@ class DBItem(AbstractItem):
             lat=row.get("latitude"),
             lon=row.get("longitude"),
         )
-
-
-def loadFromCsv(filepath):
-    """Charge tous les objets depuis le fichier CSV"""
-    items = []
-    try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                item = Marker.fromCsvRow(row)
-                if item.latitude and item.longitude:
-                    items.append(item)
-        print(f"✅ {len(items)} items chargés depuis {filepath}")
-    except Exception as e:
-        print(f"❌ Erreur chargement CSV: {e}")
-    return items
 
 
 def loadFromDb(db_connector, query, item_class):

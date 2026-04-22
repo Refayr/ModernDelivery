@@ -112,7 +112,7 @@ class ItemManager(QObject):
         success, results = db_connector.executeQuery(query)
         if success:
             ports = [Seaport.fromDbRow(row) for row in results]
-            self.add_items("seaports", ports)
+            self.addItems("seaports", ports)
             print(f"✅ {len(ports)} ports chargés")
         return success
 
@@ -122,7 +122,7 @@ class ItemManager(QObject):
         success, results = db_connector.executeQuery(query)
         if success:
             ships = [Ship.fromDbRow(row) for row in results]
-            self.add_items("ships", ships)
+            self.addItems("ships", ships)
             print(f"✅ {len(ships)} navires chargés")
         return success
 

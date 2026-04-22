@@ -6,8 +6,8 @@ class Seaport(Node, PlotableItem):
     def __init__(
         self, id, name, lat, lon, country, svg="res/img/transport_marina.svg", scale=1.0
     ):
-        super(Node, self).__init__(id, name, lat, lon, active=True)
-        super(PlotableItem, self).__init__(id, name, lat, lon, svg, scale)
+        Node.__init__(self, id, name, lat, lon, active=True)
+        PlotableItem.__init__(self, id, name, lat, lon, svg, scale)
 
         self.country = country
 

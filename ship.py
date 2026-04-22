@@ -6,12 +6,13 @@ from PySide6.QtGui import QColor
 class Ship(DBItem, PlotableItem):
     """Navire en mouvement"""
 
-    def __init__(self, imo, mmsi, name, lat, lon, heading, capacity, desc, ship_type):
-        super(DBItem, self).__init__(imo, name, lat, lon)
-        super(PlotableItem, self).__init__(
-            imo, name, lat, lon, svg="res/img/Arrow_05.svg", scale=0.4
+    def __init__(self, id, mmsi, name, lat, lon, heading, capacity, desc, ship_type):
+        DBItem.__init__(self, id, name, lat, lon)
+        PlotableItem.__init__(
+            self, id, name, lat, lon, svg="res/img/Arrow_05.svg", scale=0.4
         )
 
+        # id = imo
         self.mmsi = mmsi
         self.heading = heading  # ID du port de destination ou None
         self.capacity = capacity

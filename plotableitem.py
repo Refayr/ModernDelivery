@@ -1,5 +1,6 @@
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
 from PySide6.QtWidgets import QGraphicsSimpleTextItem, QGraphicsScene
+from PySide6.QtGui import QBrush, QPen, QColor, QFont
 from abstractitem import AbstractItem
 from osm_graphics_view import OSMGraphicsView
 
@@ -32,8 +33,11 @@ class PlotableItem(AbstractItem):
         y_pix = y_tile * osmGraphicsView.tile_size
 
         marker = QGraphicsSvgItem(self.svgPath)
-        if marker.isNull():
-            # Fallback si SVG invalide
+        if marker.boundingRect().isEmpty():
+            print(
+                f"⚠️ SVG loading error: {self.svgPath} pour {self.name}. Reverting to fallback."
+            )
+            # Fallback if invalid SVG
             marker = QGraphicsEllipseItem(x_pix - 5, y_pix - 5, 10, 10)
             marker.setBrush(QBrush(self.getColor()))
             marker.setPen(QPen(QColor(255, 255, 255), 1))
@@ -41,7 +45,7 @@ class PlotableItem(AbstractItem):
             svgRect = marker.boundingRect()
             newWidth = svgRect.width() * self.scaleFactor
             newHeight = svgRect.height() * self.scaleFactor
-            marker.setPos(x_pix - new_width / 2, y_pix - new_height / 2)
+            marker.setPos(x_pix - newWidth / 2, y_pix - newHeight / 2)
         marker.setZValue(10)  # Au-dessus des tuiles
         marker.setToolTip(self.getTooltip())
 
