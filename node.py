@@ -4,7 +4,7 @@ from dbitem import DBItem
 class Node(DBItem):
     """Représente un point géographique (Port, Carrefour, etc.)"""
 
-    def __init__(self, id, name, lat, lon, active=True):
+    def __init__(self, id, name, wkb_geometry, active=True):
         super().__init__(id, name or f"Node {id}", lat, lon)
         self.active = active
         self.connections = []
@@ -14,7 +14,6 @@ class Node(DBItem):
         return cls(
             id=row["id"],
             name=row.get("name"),  # Peut venir d'une jointure ou être NULL
-            lat=row["latitude"],
-            lon=row["longitude"],
+            wkb_geometry=row["wkb_geometry"],
             active=bool(row.get("active", True)),
         )

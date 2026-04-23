@@ -6,7 +6,7 @@ from mlistwidget import MListWidget
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 
 
-def get_coordinates_from_location(location_name):
+def getCoordinatesFromLocation(location_name):
     # Base URL API Nominatim
     base_url = "https://nominatim.openstreetmap.org/search"
 
@@ -56,7 +56,7 @@ class SearchWidget(QWidget):
         layout.addWidget(self.search_box)
         self.setLayout(layout)
 
-        # Хранение координат
+        # Store coordinates
         self.location_dict = dict()
         self.suggestions = list()
 
@@ -87,7 +87,7 @@ class SearchWidget(QWidget):
         self.location_dict.clear()  # Clean old data
 
         ranked_place = list()
-        mrequest = get_coordinates_from_location(text)
+        mrequest = getCoordinatesFromLocation(text)
         for place in mrequest:
             place_rank = int(place["place_rank"])
             display_name = place["display_name"]

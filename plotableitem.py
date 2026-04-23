@@ -12,13 +12,12 @@ class PlotableItem(AbstractItem):
         self,
         id,
         name,
-        lat,
-        lon,
+        wkb_geometry,
         svg="res/img/transport_marina.svg",
         scale=1.0,
     ):
-        super().__init__(id, name, lat, lon)
-        self.sceneItem = None  # Référence à l'élément graphique
+        super().__init__(id, name, wkb_geometry)
+        self.sceneItem = None
         self.svgPath = svg
         self.scaleFactor = scale
         self.labelItem = None
@@ -26,8 +25,8 @@ class PlotableItem(AbstractItem):
     def plot(self, osmGraphicsView: OSMGraphicsView) -> QGraphicsSvgItem:
         """Draw the marker on the map"""
         # Convertir lat/lon en coordonnées de tuile
-        x_tile, y_tile = osmGraphicsView.latLonToTile(
-            self.lat, self.lon, osmGraphicsView.zoom
+        x_tile, y_tile = osmGraphicsView.geometryToTile(
+            self.geometry, osmGraphicsView.zoom
         )
         x_pix = x_tile * osmGraphicsView.tile_size
         y_pix = y_tile * osmGraphicsView.tile_size

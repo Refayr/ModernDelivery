@@ -29,7 +29,9 @@ class MainWindow(QMainWindow):
         )
 
         self.centralWidget().setLayout(mapGridLayout)
-        self.mapView = OSMGraphicsView(zoom=5, item_manager=item_manager)
+        self.mapView = OSMGraphicsView(
+            parent=self, zoom=5, item_manager=item_manager, statusbar=self.statusBar()
+        )
         mapGridLayout.addWidget(self.mapView)
 
     def createToolBar(self):

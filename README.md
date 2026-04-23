@@ -39,6 +39,7 @@ pip install
 - requests = ">=2.32.5,<3"
 - keyring = ">=25.7.0,<26"
 - pyside6 = ">=6.9.3, <7"
+- shapely = ">=2.1.2,<3"
 
 ### PostgreSQL database creation
 -- Table Countries

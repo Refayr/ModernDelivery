@@ -4,6 +4,7 @@ import math
 from searchwidget import SearchWidget
 
 from functools import partial
+from PySide6.QtCore import Signal
 from PySide6.QtCore import QUrl, QTimer
 from PySide6.QtGui import QPixmap, QPainter, QBrush, QPen, QColor, QFont
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
@@ -20,9 +21,6 @@ from PySide6.QtWidgets import (
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
 
 from network_access_manager import NetworkAccessManager
-
-# from plotableitem import PlotableItem
-# from itemmanager import ItemManager
 
 
 def check_and_extract_numbers(filename):
@@ -42,7 +40,9 @@ def check_and_extract_numbers(filename):
 
 
 class OSMGraphicsView(QGraphicsView):
-    def __init__(self, zoom=2, parent=None, item_manager=None):
+    viewChanged = Signal()
+
+    def __init__(self, zoom=2, parent=None, item_manager=None, statusbar=None):
         super().__init__(parent)
 
         # Render settings
@@ -59,6 +59,7 @@ class OSMGraphicsView(QGraphicsView):
         self.tiles = {}  # Loaded tabs: key (zoom, x, y, world_offset)
         self._fade_anim_group = None  # Animation group link fade-out
 
+        self.statusbar = statusbar
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
         self.updateSceneRect()
@@ -108,7 +109,8 @@ class OSMGraphicsView(QGraphicsView):
     def onItemsLoaded(self, count):
         """Quand des éléments sont chargés"""
         self.renderItems()
-        self.statusBar().showMessage(f"✅ {count} éléments chargés")
+        if self.statusbar:
+            self.statusbar.showMessage(f"✅ {count} éléments chargés")
 
     def onItemsCleared(self):
         """Quand les éléments sont effacés"""
@@ -124,12 +126,13 @@ class OSMGraphicsView(QGraphicsView):
 
             for item in items:
                 try:
-                    if hasattr(item, "plotWithLabel"):
-                        marker, label = item.plotWithLabel(self)
+                    if hasattr(item, "plot"):
+                        # marker, label = item.plotWithLabel(self)
+                        marker = item.plot(self)
                         self.scene.addItem(marker)
-                        self.scene.addItem(label)
+                        # self.scene.addItem(label)
                         self.scene_items.append(marker)
-                        self.scene_labels.append(label)
+                        # self.scene_labels.append(label)
                 except Exception as e:
                     print(f"❌ draw error {item.name}: {e}")
 
@@ -159,33 +162,7 @@ class OSMGraphicsView(QGraphicsView):
         self.scene_labels.clear()
         self.scene_connections.clear()
 
-    # def loadSeaports(self, filepath):
-    #     """Charge et affiche les ports sur la carte"""
-    #     seaports = loadFromCsv(filepath)
-
-    #     for port in seaports:
-    #         self.addMarker(port)
-    #         # self.addMarkerWithLabel(port)
-
-    #     print(f"📍 {len(ports)} ports affichés sur la carte")
-
-    # def addMarker(self, marker: PlotableItem()):
-    #     """Ajoute un marqueur à la carte"""
-    #     mark = marker.plot(self)
-
-    #     self.scene.addItem(mark)
-    #     self.seaportMarkers.append(mark)
-
-    # def addMarkerWithLabel(self, marker: PlotableItem()):
-    #     """Ajoute un marqueur avec étiquette de nom"""
-    #     mark, label = marker.plot(self)
-
-    #     self.scene.addItem(mark)
-    #     self.scene.addItem(label)
-    #     self.seaportMarkers.append(mark)
-    #     self.seaportLabels.append(label)
-
-    def updatePortMarkers(self):
+    def updateMarkers(self):
         """Recalcule la position des marqueurs après changement de zoom"""
         self.renderItems()
 
@@ -224,6 +201,27 @@ class OSMGraphicsView(QGraphicsView):
             f"Map moved to BBOX: lat={center_lat}, lon={center_lon}, zoom={self.zoom}"
         )
 
+    def getVisibleBoundingBox(self):
+        """
+        Retourne (min_lon, min_lat, max_lon, max_lat) de la zone visible.
+        """
+        # Récupérer le rectangle visible dans la scène
+        scene_rect = self.mapToScene(self.viewport().rect()).boundingRect()
+
+        # Les coordonnées de la scène sont en degrés (lat/lon)
+        # topLeft = (min_x, max_y) -> (min_lon, max_lat)
+        # bottomRight = (max_x, min_y) -> (max_lon, min_lat)
+
+        min_lon = scene_rect.left()
+        max_lon = scene_rect.right()
+        max_lat = scene_rect.top()
+        min_lat = scene_rect.bottom()
+
+        if min_lon > max_lon or min_lat > max_lat:
+            return None
+
+        return (min_lon, min_lat, max_lon, max_lat)
+
     def calculateBestZoom(self, south, north, west, east):
         """
         Calculates the optimal level of a zoom so that the boundingbox is fully embedded in the window.
@@ -244,6 +242,30 @@ class OSMGraphicsView(QGraphicsView):
                 return z  # Return the first suitable zoom
 
         return None  # If nothing is found, leave the current one
+
+    def geometryToTile(self, wkb_geometry, zoom):
+        if isinstance(wkb_geometry, bytes):
+            try:
+                wkb_geometry = wkb.loads(wkb_geometry)
+            except Exception as e:
+                raise ValueError(f"Impossible to parse WKB: {e}")
+
+        if wkb_geometry is None:
+            raise ValueError("La géométrie ne peut pas être None")
+
+        if hasattr(wkb_geometry, "x") and hasattr(wkb_geometry, "y"):
+            lon = wkb_geometry.x
+            lat = wkb_geometry.y
+        elif hasattr(wkb_geometry, "coords"):
+            # Polygon, LineString
+            coords = list(wkb_geometry.coords)
+            if len(coords) == 0:
+                raise ValueError("No coordinates in this geometry")
+            lon, lat = coords[0]
+        else:
+            raise ValueError(f"Unsupported geometry: {type(wkb_geometry)}")
+
+        return self.latLonToTile(lat, lon, zoom)
 
     def latLonToTile(self, lat, lon, zoom):
         """
@@ -331,6 +353,7 @@ class OSMGraphicsView(QGraphicsView):
                 if key not in self.tiles:
                     # self.preLoadTile(wrapped_x, y, self.zoom, world_offset)
                     self.loadTile(wrapped_x, y, self.zoom, world_offset)
+        self.viewChanged.emit()
 
     def loadTile(self, x, y, z, world_offset=0):
         """
@@ -344,12 +367,7 @@ class OSMGraphicsView(QGraphicsView):
 
         url = f"https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         self.network_manager.requestTile(url)
-
-        # request = QNetworkRequest(QUrl(url))
-        # reply = self.network_manager_pool.getNetworkManager().get(request)
-        # reply.finished.connect(
-        #     partial(self.handleTileReply, reply, x, y, z, world_offset)
-        # )
+        self.viewChanged.emit()
 
     def handleTileReply(self, reply, x, y, z, world_offset):
         """
@@ -422,7 +440,7 @@ class OSMGraphicsView(QGraphicsView):
         self.centerOn(new_center)
         self.updateTiles()
 
-        self.updatePortMarkers()
+        self.updateMarkers()
 
         print(f"ZOOM: {self.zoom}")
 
@@ -474,7 +492,7 @@ class OSMGraphicsView(QGraphicsView):
         self.centerOn(new_center)
         self.updateTiles()
 
-        self.updatePortMarkers()
+        self.updateMarkers()
 
     def downZoomEvent(self):
         new_zoom = self.zoom - 1
@@ -502,7 +520,7 @@ class OSMGraphicsView(QGraphicsView):
         self.centerOn(new_center)
         self.updateTiles()
 
-        self.updatePortMarkers()
+        self.updateMarkers()
 
     def isNearMapBoundary(self, margin=50):
         # We get a visible area in the scene coordinates

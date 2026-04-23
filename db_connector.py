@@ -89,14 +89,14 @@ class PostGISConnector:
 
     def getSeaports(self, country: str = None, limit: int = 100) -> List[Dict]:
         """Get seaports from PostGIS"""
+        print("SERT A RIEN - TO DELETE")
         query = """
             SELECT
                 name,
                 country,
                 port_id,
-                ST_Y(geom) as latitude,
-                ST_X(geom) as longitude,
-                url
+                ST_Y(wkb_geometry) as latitude,
+                ST_X(wkb_geometry) as longitude,
             FROM ports
         """
         params = []
@@ -114,6 +114,7 @@ class PostGISConnector:
 
     def getAllCountries(self) -> List[str]:
         """Récupère la liste des pays uniques"""
+        print("SERT A RIEN - TO DELETE")
         success, results = self.executeQuery(
             "SELECT DISTINCT country FROM ports ORDER BY country"
         )
@@ -123,6 +124,7 @@ class PostGISConnector:
 
     def getSeaportCount(self) -> int:
         """Gets total number of seaports"""
+        print("SERT A RIEN - TO DELETE")
         success, results = self.executeQuery("SELECT COUNT(*) as count FROM Seaports")
         if success and results:
             return results[0]["count"]

@@ -5,8 +5,8 @@ from abstractitem import AbstractItem
 class DBItem(AbstractItem):
     """Item from PostGIS or CSV file"""
 
-    def __init__(self, id, name, lat, lon):
-        super().__init__(id, name, lat, lon)
+    def __init__(self, id, name, wkb_geometry):
+        super().__init__(id, name, wkb_geometry)
 
     @classmethod
     def fromDbRow(cls, row):
@@ -14,9 +14,22 @@ class DBItem(AbstractItem):
         return cls(
             id=row.get("id", ""),
             name=row.get("name", ""),
-            lat=row.get("latitude"),
-            lon=row.get("longitude"),
+            wkb_geometry=row.get("wkb_geometry"),
         )
+
+    def sqlQuery(self, min_lon, min_lat, max_lon, max_lat):
+        query_str = """
+            SELECT *
+            FROM {table}
+            WHERE ST_Intersects(
+                wkb_geometry,
+                ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+            )
+        """
+        table_name = "nodes"
+        query_str = sql_template.format(table=table_name)
+
+        return query_str, (min_lon, min_lat, max_lon, max_lat)
 
 
 def loadFromDb(db_connector, query, item_class):
@@ -27,7 +40,7 @@ def loadFromDb(db_connector, query, item_class):
         if success:
             for row in results:
                 item = item_class.fromDbRow(row)
-                if item.lat and item.lon:
+                if item.wkb_geometry:
                     items.append(item)
         print(f"✅ {len(items)} éléments chargés depuis la base")
     except Exception as e:

@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, QObject, QTimer
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from PySide6.QtCore import QMargins
 
@@ -17,6 +17,7 @@ class ModernDeliverySignals(QObject):
     db_disconnected = Signal()
     ports_loaded = Signal(int)
     error = Signal(str)
+    data_refreshed = Signal(int)
 
 
 class ModernDelivery(QApplication):
@@ -36,6 +37,11 @@ class ModernDelivery(QApplication):
         self.credentials_storage = CredentialStorage()
 
         self.mainWindow = None
+
+        # Timer
+        self.refresh_timer = QTimer()
+        self.refresh_timer.timeout.connect(self.onPeriodicRefresh)
+        self.refresh_timer.setInterval(30000)  # 30000 ms = 30s
 
         # Initialiser
         self.initialize()
@@ -58,16 +64,20 @@ class ModernDelivery(QApplication):
             return
 
         try:
-            self.item_manager.loadSeaportsFromDb(self.db_connector)
-            self.item_manager.loadShipsFromDb(self.db_connector)
-            self.item_manager.loadConnectionsFromDb(self.db_connector)
-            self.mainWindow.mapView.renderItems()
+            # self.item_manager.loadSeaportsFromDb(self.db_connector)
+            # self.item_manager.loadShipsFromDb(self.db_connector)
+            # self.item_manager.loadConnectionsFromDb(self.db_connector)
+            success, count = self.item_manager.loadVisibleItemsFromDb(
+                self.db_connector, -180.0, -90.0, 180.0, 90.0
+            )
+            if success:
+                self.mainWindow.mapView.renderItems()
 
-            counts = self.item_manager.getCountsByType()
-            total = sum(counts.values())
+                counts = self.item_manager.getCountsByType()
+                total = sum(counts.values())
 
-            message = f"✅ {total} items loaded ({counts['seaports']} seaports, {counts['ships']} ships)"
-            self.mainWindow.statusBar().showMessage(message)
+                message = f"✅ {total} items loaded ({counts['seaports']} seaports, {counts['ships']} ships)"
+                self.mainWindow.statusBar().showMessage(message)
 
         except Exception as e:
             self.signals.error.emit(f"Error loading data: {str(e)}")
@@ -97,6 +107,13 @@ class ModernDelivery(QApplication):
 
             self.initializeData()
 
+            self.refresh_timer.start()
+
+            if hasattr(self.mainWindow, "mapView") and hasattr(
+                self.mainWindow.mapView, "viewChanged"
+            ):
+                self.mainWindow.mapView.viewChanged.connect(self.onViewChanged)
+
             self.mainWindow.show()
 
             if self.mainWindow.statusBar():
@@ -108,6 +125,92 @@ class ModernDelivery(QApplication):
             self.signals.error.emit(msg)
             QMessageBox.critical(None, "Error", msg)
             self.showDbLogin()
+
+    def onViewChanged(self):
+        """Appelé quand la vue change (pan, zoom, fin de chargement)"""
+        self.refreshTimerSingleShot()
+
+    def refreshTimerSingleShot(self):
+        """Débouncing simple : ne recharge que si aucun timer n'est en cours"""
+        if hasattr(self, "_pending_refresh"):
+            return
+        self._pending_refresh = True
+        QTimer.singleShot(
+            500, self.refreshVisibleData
+        )  # Attend 500ms après le dernier mouvement
+
+    def onPeriodicRefresh(self):
+        """Appelé toutes les 30 secondes"""
+        self.refreshVisibleData()
+
+    def refreshVisibleData(self):
+        """
+        Recharge uniquement les items visibles dans la vue actuelle.
+        """
+        if (
+            not self.db_connector
+            or not self.mainWindow
+            or not hasattr(self.mainWindow, "mapView")
+        ):
+            return
+
+        mapView = self.mainWindow.mapView
+
+        try:
+            bbox = mapView.getVisibleBoundingBox()
+            if not bbox:
+                return
+            min_lon, min_lat, max_lon, max_lat = bbox
+        except AttributeError:
+            bbox = self.calculateViewBbox(mapView)
+            if not bbox:
+                return
+            min_lon, min_lat, max_lon, max_lat = bbox
+
+        success, count = self.item_manager.loadVisibleItemsFromDb(
+            self.db_connector, min_lon, min_lat, max_lon, max_lat
+        )
+
+        if success:
+            self.mainWindow.mapView.renderItems()
+            self.signals.data_refreshed.emit(count)
+            self.mainWindow.statusBar().showMessage(f"🔄 {count} items refreshed", 2000)
+        else:
+            self.signals.error.emit("Failed to refresh visible data")
+
+        # Reset du flag de débouncing
+        if hasattr(self, "_pending_refresh"):
+            delattr(self, "_pending_refresh")
+
+    def calculateViewBbox(self, mapView):
+        """
+        Calcule manuellement le bounding box si getVisibleBoundingBox n'existe pas.
+        Retourne (min_lon, min_lat, max_lon, max_lat) ou None.
+        """
+        try:
+            # Récupérer la rect de la vue visible
+            view_rect = mapView.viewport().rect()
+            scene_rect = mapView.mapToScene(view_rect).boundingRect()
+
+            # Convertir les coins en coordonnées géographiques
+            # On suppose que la scène est en degrés (EPSG:4326)
+            p1 = scene_rect.topLeft()
+            p2 = scene_rect.bottomRight()
+
+            # Attention : en géographie, Y est la latitude, X est la longitude
+            # Mais dans QGraphicsView, Y augmente vers le bas.
+            # Si votre scène est en lat/lon standard, topLeft = (min_lon, max_lat)
+            # et bottomRight = (max_lon, min_lat)
+
+            min_lon = p1.x()
+            max_lon = p2.x()
+            max_lat = p1.y()
+            min_lat = p2.y()
+
+            return (min_lon, min_lat, max_lon, max_lat)
+        except Exception as e:
+            print(f"Bbox computation error: {e}")
+            return None
 
     def disconnectDb(self):
         """Déconnecte de la base"""
