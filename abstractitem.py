@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import math
 from abc import ABC, abstractmethod
 from typing import Optional, Any
@@ -155,24 +154,6 @@ class AbstractItem(ABC):
         max_lon, max_lat = self.tileToLatLon(x_tile + 1, y_tile + 1, zoom)
         return min_lon, min_lat, max_lon, max_lat
 
-=======
-from abc import ABC, abstractmethod
-
-
-class AbstractItem(ABC):
-    def __init__(self, id="", name="", lat=0.0, lon=0.0):
-        self.initValues(id, name, lat, lon)
-
-    def initValues(self, id: str, name: str, lat: float, lon: float):
-        self.id = id
-        self.name = name
-        self.lat = lat
-        self.lon = lon
-
-    def __eq__(self, other):
-        return self.id == other.id
-
->>>>>>> a4a8dd7 (Initial version of the map viewer)
     @staticmethod
     def parseCoordinate(coord_str):
         """

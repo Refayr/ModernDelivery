@@ -95,11 +95,7 @@ class DBLoginDialog(QDialog):
         layout.addWidget(self.status_label)
 
     def loadSavedCredentials(self):
-<<<<<<< HEAD
         success, result = self.credentials_storage.loadCredentials()
-=======
-        success, result = self.credentials_storage.load_credentials()
->>>>>>> a4a8dd7 (Initial version of the map viewer)
         if success:
             self.host_input.setText(result["host"])
             self.port_input.setValue(result["port"])

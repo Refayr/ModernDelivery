@@ -1,9 +1,5 @@
 import sys
-<<<<<<< HEAD
 from PySide6.QtCore import Signal, QObject, QTimer
-=======
-from PySide6.QtCore import Signal, QObject
->>>>>>> a4a8dd7 (Initial version of the map viewer)
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from PySide6.QtCore import QMargins
 
@@ -21,10 +17,7 @@ class ModernDeliverySignals(QObject):
     db_disconnected = Signal()
     ports_loaded = Signal(int)
     error = Signal(str)
-<<<<<<< HEAD
     data_refreshed = Signal(int)
-=======
->>>>>>> a4a8dd7 (Initial version of the map viewer)
 
 
 class ModernDelivery(QApplication):
@@ -45,14 +38,11 @@ class ModernDelivery(QApplication):
 
         self.mainWindow = None
 
-<<<<<<< HEAD
         # Timer
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.onPeriodicRefresh)
         self.refresh_timer.setInterval(30000)  # 30000 ms = 30s
 
-=======
->>>>>>> a4a8dd7 (Initial version of the map viewer)
         # Initialiser
         self.initialize()
 
@@ -74,7 +64,6 @@ class ModernDelivery(QApplication):
             return
 
         try:
-<<<<<<< HEAD
             success, count = self.item_manager.loadVisibleItemsFromDb(
                 self.db_connector, -180.0, -90.0, 180.0, 90.0
             )
@@ -86,18 +75,6 @@ class ModernDelivery(QApplication):
 
                 message = f"✅ {total} items loaded ({counts['seaports']} seaports, {counts['ships']} ships)"
                 self.mainWindow.statusBar().showMessage(message)
-=======
-            self.item_manager.loadSeaportsFromDb(self.db_connector)
-            self.item_manager.loadShipsFromDb(self.db_connector)
-            self.item_manager.loadConnectionsFromDb(self.db_connector)
-            self.mainWindow.mapView.renderItems()
-
-            counts = self.item_manager.getCountsByType()
-            total = sum(counts.values())
-
-            message = f"✅ {total} items loaded ({counts['seaports']} seaports, {counts['ships']} ships)"
-            self.mainWindow.statusBar().showMessage(message)
->>>>>>> a4a8dd7 (Initial version of the map viewer)
 
         except Exception as e:
             self.signals.error.emit(f"Error loading data: {str(e)}")
@@ -107,11 +84,7 @@ class ModernDelivery(QApplication):
         """Affiche le widget de connexion"""
         dialog = DBLoginDialog()
         if dialog.exec() == QDialog.Accepted:
-<<<<<<< HEAD
             creds = dialog.getCredentials()
-=======
-            creds = dialog.get_credentials()
->>>>>>> a4a8dd7 (Initial version of the map viewer)
             self.connectToDb(creds)
         else:
             # Annulation - quitter ou attendre
@@ -129,7 +102,6 @@ class ModernDelivery(QApplication):
             if not self.mainWindow:
                 self.createMainWindow()
 
-<<<<<<< HEAD
             # self.initializeData()
 
             self.refresh_timer.start()
@@ -138,9 +110,6 @@ class ModernDelivery(QApplication):
                 self.mainWindow.mapView, "viewChanged"
             ):
                 self.mainWindow.mapView.viewChanged.connect(self.onViewChanged)
-=======
-            self.initializeData()
->>>>>>> a4a8dd7 (Initial version of the map viewer)
 
             self.mainWindow.show()
 
@@ -154,7 +123,6 @@ class ModernDelivery(QApplication):
             QMessageBox.critical(None, "Error", msg)
             self.showDbLogin()
 
-<<<<<<< HEAD
     def onViewChanged(self):
         """Appelé quand la vue change (pan, zoom, fin de chargement)"""
         self.refreshTimerSingleShot()
@@ -265,8 +233,6 @@ class ModernDelivery(QApplication):
             print(f"Bbox computation error: {e}")
             return None
 
-=======
->>>>>>> a4a8dd7 (Initial version of the map viewer)
     def disconnectDb(self):
         """Déconnecte de la base"""
         if self.db_connector:
@@ -277,8 +243,6 @@ class ModernDelivery(QApplication):
     def createMainWindow(self):
         """Crée la fenêtre principale"""
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         self.mainWindow = MainWindow(None, self.item_manager)
         self.mainWindow.setWindowTitle("MapView - ModernDelivery")
 
@@ -286,25 +250,15 @@ class ModernDelivery(QApplication):
         #     # Center on straight of Ormuz
         #     self.mainWindow.mapView.centerOnTile(42, 27, 6)
 
-=======
-        self.mainWindow = MainWindow()
-=======
-        self.mainWindow = MainWindow(None, self.item_manager)
->>>>>>> 8e23b95 (Human readable database.sql)
         self.mainWindow.setWindowTitle("MapView - ModernDelivery")
 
->>>>>>> a4a8dd7 (Initial version of the map viewer)
     def getDbConnector(self):
         """Retourne le connecteur de base de données"""
         return self.db_connector
 
     def quitApplication(self):
         """Quitte proprement l'application"""
-<<<<<<< HEAD
         self.disconnectDb()
-=======
-        self.disconnect_db()
->>>>>>> a4a8dd7 (Initial version of the map viewer)
         self.quit()
 
     def showWindow(self):
