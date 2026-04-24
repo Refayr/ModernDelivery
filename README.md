@@ -120,3 +120,29 @@ When a chokepoint becomes inactive:
 
 1. Install PostgreSQL with PostGIS enabled
 2. Run scripts in order:
+             1 -> 2 -> 3 -> 4 -> 5 
+3. Ensure CSV file paths are updated to match your local environment
+4. Execute simulation queries to observe ship movement
+
+---
+
+## 📌 Notes
+
+- The system is fully SQL-based (no external programming languages required)
+- Geometry consistency (geometry vs geography) is important for correct spatial operations
+- Ship state is continuously updated using `ON CONFLICT` logic for efficiency
+
+---
+
+## 📈 Future Improvements
+
+- Integration of real-time AIS data
+- Advanced routing (Dijkstra / pgRouting over sea graph)
+- Time-based congestion modelling
+- Performance optimization using partitioning
+
+---
+
+## 📜 License
+
+Academic / educational use only.
