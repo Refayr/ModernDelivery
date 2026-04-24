@@ -5,9 +5,14 @@ from PySide6.QtWidgets import QGridLayout, QToolBar, QStatusBar, QWidget
 
 
 class MainWindow(QMainWindow):
+<<<<<<< HEAD
     def __init__(self, parent=None, item_manager=None):
         super().__init__(parent)
         self.item_manager = item_manager
+=======
+    def __init__(self, parent=None):
+        super().__init__(parent)
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
 
         self.setWindowTitle("ModernDelivery")
 
@@ -29,9 +34,13 @@ class MainWindow(QMainWindow):
         )
 
         self.centralWidget().setLayout(mapGridLayout)
+<<<<<<< HEAD
         self.mapView = OSMGraphicsView(
             parent=self, zoom=5, item_manager=item_manager, statusbar=self.statusBar()
         )
+=======
+        self.mapView = OSMGraphicsView(zoom=5)
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
         mapGridLayout.addWidget(self.mapView)
 
     def createToolBar(self):

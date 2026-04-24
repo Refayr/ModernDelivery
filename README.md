@@ -39,7 +39,10 @@ pip install
 - requests = ">=2.32.5,<3"
 - keyring = ">=25.7.0,<26"
 - pyside6 = ">=6.9.3, <7"
+<<<<<<< HEAD
 - shapely = ">=2.1.2,<3"
+=======
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
 
 ### PostgreSQL database creation
 -- Table Countries

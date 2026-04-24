@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from PySide6.QtGui import QColor
 
 from plotableitem import PlotableItem
@@ -16,6 +17,18 @@ class Seaport(DBItem, PlotableItem):
     ):
         DBItem.__init__(self, id, name, wkb_geometry)
         PlotableItem.__init__(self, id, name, wkb_geometry, img, size)
+=======
+from plotableitem import PlotableItem
+from node import Node
+
+
+class Seaport(Node, PlotableItem):
+    def __init__(
+        self, id, name, lat, lon, country, svg="res/img/transport_marina.svg", scale=1.0
+    ):
+        super(Node, self).__init__(id, name, lat, lon, active=True)
+        super(PlotableItem, self).__init__(id, name, lat, lon, svg, scale)
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
 
         self.country = country
 
@@ -23,6 +36,7 @@ class Seaport(DBItem, PlotableItem):
         return QColor(0, 100, 255)
 
     def getTooltip(self):
+<<<<<<< HEAD
         return f"Port: {self.name}\nCountry: {self.country}\nID: {self.id}"
 
     @classmethod
@@ -105,3 +119,17 @@ class Seaport(DBItem, PlotableItem):
                     print(f"Error while parsing item {row["id"]}: {e}")
 
         return True, new_items
+=======
+        return f"Port: {self.name}\nCountry: {self.country_name}\nID: {self.id}"
+
+    @classmethod
+    def fromDbRow(cls, row):
+        return cls(
+            id=row["id"],
+            name=row["name"],
+            lat=row["latitude"],
+            lon=row["longitude"],
+            country_name=row["country_name"],
+            active=bool(row.get("active", True)),
+        )
+>>>>>>> a4a8dd7 (Initial version of the map viewer)

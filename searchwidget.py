@@ -6,7 +6,11 @@ from mlistwidget import MListWidget
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 
 
+<<<<<<< HEAD
 def getCoordinatesFromLocation(location_name):
+=======
+def get_coordinates_from_location(location_name):
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
     # Base URL API Nominatim
     base_url = "https://nominatim.openstreetmap.org/search"
 
@@ -29,9 +33,16 @@ def getCoordinatesFromLocation(location_name):
 
         if data:
             return data
+<<<<<<< HEAD
         raise ValueError("Location not found.")
 
     raise Exception(f"Query error: {response.status_code}")
+=======
+        else:
+            raise ValueError("Location not found.")
+    else:
+        raise Exception(f"Query error: {response.status_code}")
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
 
 
 class SearchWidget(QWidget):
@@ -55,9 +66,15 @@ class SearchWidget(QWidget):
         layout.addWidget(self.search_box)
         self.setLayout(layout)
 
+<<<<<<< HEAD
         # Store coordinates
         self.location_dict = {}
         self.suggestions = []
+=======
+        # Хранение координат
+        self.location_dict = dict()
+        self.suggestions = list()
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
 
         self.suggestList = MListWidget(self.parent())
         self.suggestList.setFixedWidth(350)
@@ -85,8 +102,13 @@ class SearchWidget(QWidget):
 
         self.location_dict.clear()  # Clean old data
 
+<<<<<<< HEAD
         ranked_place = []
         mrequest = getCoordinatesFromLocation(text)
+=======
+        ranked_place = list()
+        mrequest = get_coordinates_from_location(text)
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
         for place in mrequest:
             place_rank = int(place["place_rank"])
             display_name = place["display_name"]

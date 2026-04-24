@@ -1,12 +1,19 @@
+<<<<<<< HEAD
 from PySide6.QtGui import QColor
 
 from plotableitem import PlotableItem
 from dbitem import DBItem
+=======
+from plotableitem import PlotableItem
+from dbitem import DBItem
+from PySide6.QtGui import QColor
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
 
 
 class Ship(DBItem, PlotableItem):
     """Navire en mouvement"""
 
+<<<<<<< HEAD
     def __init__(self, id, name, wkb_geometry, heading, capacity, desc, ship_type):
         DBItem.__init__(self, id, name, wkb_geometry)
         PlotableItem.__init__(
@@ -14,6 +21,15 @@ class Ship(DBItem, PlotableItem):
         )
 
         # id = imo
+=======
+    def __init__(self, imo, mmsi, name, lat, lon, heading, capacity, desc, ship_type):
+        super(DBItem, self).__init__(imo, name, lat, lon)
+        super(PlotableItem, self).__init__(
+            imo, name, lat, lon, svg="res/img/Arrow_05.svg", scale=0.4
+        )
+
+        self.mmsi = mmsi
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
         self.heading = heading  # ID du port de destination ou None
         self.capacity = capacity
         self.description = desc
@@ -38,6 +54,7 @@ class Ship(DBItem, PlotableItem):
 
     @classmethod
     def fromDbRow(cls, row):
+<<<<<<< HEAD
         item_id = row["imo"]
         wkb_data = row.get("wkb_geometry")
         wkb_bytes = None
@@ -71,11 +88,20 @@ class Ship(DBItem, PlotableItem):
             id=item_id,
             name="",
             wkb_geometry=wkb_bytes,
+=======
+        return cls(
+            id=row["imo"],
+            mmsi=row["mmsi"],
+            name=row["name"],
+            lat=row["latitude"],
+            lon=row["longitude"],
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
             heading=row.get("heading"),
             capacity=row["capacity"],
             desc=row.get("description", ""),
             ship_type=row["type"],
         )
+<<<<<<< HEAD
 
     @classmethod
     def sqlQuery(cls, min_lon, min_lat, max_lon, max_lat):
@@ -116,3 +142,5 @@ class Ship(DBItem, PlotableItem):
                     print(f"Error while parsing item {row["imo"]}: {e}")
 
         return True, new_items
+=======
+>>>>>>> a4a8dd7 (Initial version of the map viewer)

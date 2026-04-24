@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import os
 
 from PySide6.QtCore import Qt
@@ -16,6 +17,8 @@ from PySide6.QtGui import (
     QFont,
     QPixmap,
 )
+=======
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
 from abstractitem import AbstractItem
 from osm_graphics_view import OSMGraphicsView
 
@@ -27,6 +30,7 @@ class PlotableItem(AbstractItem):
         self,
         id,
         name,
+<<<<<<< HEAD
         wkb_geometry,
         img="res/img/marina32.marina32.png",
         size=30.0,
@@ -85,6 +89,40 @@ class PlotableItem(AbstractItem):
         marker.setPos(x_pix - self.size / 2, y_pix - self.size / 2)
 
         marker.setZValue(1000)
+=======
+        lat,
+        lon,
+        svg="res/img/transport_marina.svg",
+        scale=1.0,
+    ):
+        super().__init__(id, name, lat, lon)
+        self.sceneItem = None  # Référence à l'élément graphique
+        self.svgPath = svg
+        self.scaleFactor = scale
+        self.labelItem = None
+
+    def plot(self, osmGraphicsView: OSMGraphicsView) -> QGraphicsSvgItem:
+        """Draw the marker on the map"""
+        # Convertir lat/lon en coordonnées de tuile
+        x_tile, y_tile = osmGraphicsView.latLonToTile(
+            self.lat, self.lon, osmGraphicsView.zoom
+        )
+        x_pix = x_tile * osmGraphicsView.tile_size
+        y_pix = y_tile * osmGraphicsView.tile_size
+
+        marker = QGraphicsSvgItem(self.svgPath)
+        if marker.isNull():
+            # Fallback si SVG invalide
+            marker = QGraphicsEllipseItem(x_pix - 5, y_pix - 5, 10, 10)
+            marker.setBrush(QBrush(self.getColor()))
+            marker.setPen(QPen(QColor(255, 255, 255), 1))
+        else:
+            svgRect = marker.boundingRect()
+            newWidth = svgRect.width() * self.scaleFactor
+            newHeight = svgRect.height() * self.scaleFactor
+            marker.setPos(x_pix - new_width / 2, y_pix - new_height / 2)
+        marker.setZValue(10)  # Au-dessus des tuiles
+>>>>>>> a4a8dd7 (Initial version of the map viewer)
         marker.setToolTip(self.getTooltip())
 
         return marker
