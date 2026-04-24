@@ -6,7 +6,11 @@ from ship import Ship
 from seaport import Seaport
 =======
 from connection import Connection
+<<<<<<< HEAD
 >>>>>>> a4a8dd7 (Initial version of the map viewer)
+=======
+from ship import Ship
+>>>>>>> 8e23b95 (Human readable database.sql)
 
 
 class ItemManager(QObject):
@@ -110,7 +114,7 @@ class ItemManager(QObject):
         self.connections.append(connection)
         return connection
 
-    def clear_Connections(self):
+    def clearConnections(self):
         """Efface toutes les connexions"""
         self.connections = []
 

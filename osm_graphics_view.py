@@ -35,8 +35,12 @@ from abstractitem import AbstractItem
 from network_access_manager import NetworkAccessManager
 
 # from plotableitem import PlotableItem
+<<<<<<< HEAD
 from itemmanager import ItemManager
 >>>>>>> a4a8dd7 (Initial version of the map viewer)
+=======
+# from itemmanager import ItemManager
+>>>>>>> 8e23b95 (Human readable database.sql)
 
 
 def check_and_extract_numbers(filename):
@@ -71,7 +75,7 @@ class OSMGraphicsView(QGraphicsView):
 
 
 class OSMGraphicsView(QGraphicsView):
-    def __init__(self, zoom=2, parent=None):
+    def __init__(self, zoom=2, parent=None, item_manager=None):
         super().__init__(parent)
 
 >>>>>>> a4a8dd7 (Initial version of the map viewer)
@@ -137,6 +141,7 @@ class OSMGraphicsView(QGraphicsView):
         self.seaportMarkers = []
         self.seaportLabels = []
 <<<<<<< HEAD
+<<<<<<< HEAD
 
         self.item_manager = item_manager
 =======
@@ -144,6 +149,10 @@ class OSMGraphicsView(QGraphicsView):
 
         self.item_manager = ItemManager(self)
 >>>>>>> a4a8dd7 (Initial version of the map viewer)
+=======
+
+        self.item_manager = item_manager
+>>>>>>> 8e23b95 (Human readable database.sql)
         self.item_manager.items_loaded.connect(self.onItemsLoaded)
         self.item_manager.items_cleared.connect(self.onItemsCleared)
 

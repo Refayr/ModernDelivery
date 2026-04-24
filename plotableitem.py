@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import os
 
 from PySide6.QtCore import Qt
@@ -19,6 +20,10 @@ from PySide6.QtGui import (
 )
 =======
 >>>>>>> a4a8dd7 (Initial version of the map viewer)
+=======
+from PySide6.QtSvgWidgets import QGraphicsSvgItem
+from PySide6.QtWidgets import QGraphicsSimpleTextItem, QGraphicsScene
+>>>>>>> 8e23b95 (Human readable database.sql)
 from abstractitem import AbstractItem
 from osm_graphics_view import OSMGraphicsView
 

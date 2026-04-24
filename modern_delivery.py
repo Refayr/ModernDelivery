@@ -278,6 +278,7 @@ class ModernDelivery(QApplication):
         """Crée la fenêtre principale"""
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.mainWindow = MainWindow(None, self.item_manager)
         self.mainWindow.setWindowTitle("MapView - ModernDelivery")
 
@@ -287,6 +288,9 @@ class ModernDelivery(QApplication):
 
 =======
         self.mainWindow = MainWindow()
+=======
+        self.mainWindow = MainWindow(None, self.item_manager)
+>>>>>>> 8e23b95 (Human readable database.sql)
         self.mainWindow.setWindowTitle("MapView - ModernDelivery")
 
 >>>>>>> a4a8dd7 (Initial version of the map viewer)
