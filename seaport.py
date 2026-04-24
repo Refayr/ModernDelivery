@@ -1,19 +1,21 @@
+from PySide6.QtGui import QColor
+
 from plotableitem import PlotableItem
-from node import Node
+from dbitem import DBItem
 
 
-class Seaport(Node, PlotableItem):
+class Seaport(DBItem, PlotableItem):
     def __init__(
         self,
         id,
         name,
         wkb_geometry,
         country,
-        svg="res/img/transport_marina.svg",
-        scale=1.0,
+        img="res/img/marina32.png",
+        size=30.0,
     ):
-        Node.__init__(self, id, name, wkb_geometry, active=True)
-        PlotableItem.__init__(self, id, name, wkb_geometry, svg, scale)
+        DBItem.__init__(self, id, name, wkb_geometry)
+        PlotableItem.__init__(self, id, name, wkb_geometry, img, size)
 
         self.country = country
 
@@ -21,12 +23,11 @@ class Seaport(Node, PlotableItem):
         return QColor(0, 100, 255)
 
     def getTooltip(self):
-        return f"Port: {self.name}\nCountry: {self.country_name}\nID: {self.id}"
+        return f"Port: {self.name}\nCountry: {self.country}\nID: {self.id}"
 
     @classmethod
     def fromDbRow(cls, row):
-        item_id = row["s.id"]
-        print(item_id)  # TODO fix exception
+        item_id = row["id"]
         wkb_data = row.get("wkb_geometry")
         wkb_bytes = None
 
@@ -57,10 +58,9 @@ class Seaport(Node, PlotableItem):
 
         return cls(
             id=item_id,
-            name=row.get("s.name"),
+            name=row.get("name"),
             wkb_geometry=wkb_bytes,
             country=row.get("country"),
-            active=bool(row.get("active", True)),
         )
 
     @classmethod
@@ -90,8 +90,6 @@ class Seaport(Node, PlotableItem):
 
         query, values = cls.sqlQuery(min_lon, min_lat, max_lon, max_lat)
 
-        total_count = 0
-
         success, results = db_connector.executeQuery(query, values)
 
         new_items = []
@@ -104,9 +102,6 @@ class Seaport(Node, PlotableItem):
 
                     new_items.append(item)
                 except Exception as e:
-                    print(f"Error while parsing item {item_id}: {e}")
-
-            # Debug optionnel
-            # print(f"✅ {item_type}: {len(new_items)} items chargés (zone visible)")
+                    print(f"Error while parsing item {row["id"]}: {e}")
 
         return True, new_items

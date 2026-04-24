@@ -29,10 +29,9 @@ def getCoordinatesFromLocation(location_name):
 
         if data:
             return data
-        else:
-            raise ValueError("Location not found.")
-    else:
-        raise Exception(f"Query error: {response.status_code}")
+        raise ValueError("Location not found.")
+
+    raise Exception(f"Query error: {response.status_code}")
 
 
 class SearchWidget(QWidget):
@@ -57,8 +56,8 @@ class SearchWidget(QWidget):
         self.setLayout(layout)
 
         # Store coordinates
-        self.location_dict = dict()
-        self.suggestions = list()
+        self.location_dict = {}
+        self.suggestions = []
 
         self.suggestList = MListWidget(self.parent())
         self.suggestList.setFixedWidth(350)
@@ -86,7 +85,7 @@ class SearchWidget(QWidget):
 
         self.location_dict.clear()  # Clean old data
 
-        ranked_place = list()
+        ranked_place = []
         mrequest = getCoordinatesFromLocation(text)
         for place in mrequest:
             place_rank = int(place["place_rank"])

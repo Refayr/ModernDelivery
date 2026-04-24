@@ -1,11 +1,9 @@
 import re
 import math
 
-from searchwidget import SearchWidget
 
 from functools import partial
-from PySide6.QtCore import Signal
-from PySide6.QtCore import QUrl, QTimer
+from PySide6.QtCore import Qt, Signal, QUrl, QTimer, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QBrush, QPen, QColor, QFont
 from PySide6.QtNetwork import QNetworkRequest, QNetworkReply
 from PySide6.QtWidgets import (
@@ -20,7 +18,11 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
 
+from shapely import wkb
+
+from searchwidget import SearchWidget
 from network_access_manager import NetworkAccessManager
+from abstractitem import AbstractItem
 
 
 def check_and_extract_numbers(filename):
@@ -31,12 +33,9 @@ def check_and_extract_numbers(filename):
     match = re.match(pattern, filename)
 
     if match:
-        # If it matches, we extract the numbers
         numbers = match.groups()
         return True, [int(v) for v in numbers]
-    else:
-        # If it doesn't match, return False and an empty list.
-        return False, list()
+    return False, []
 
 
 class OSMGraphicsView(QGraphicsView):
@@ -44,6 +43,8 @@ class OSMGraphicsView(QGraphicsView):
 
     def __init__(self, zoom=2, parent=None, item_manager=None, statusbar=None):
         super().__init__(parent)
+
+        self._initialized = False
 
         # Render settings
         self.setRenderHint(QPainter.Antialiasing)
@@ -68,6 +69,9 @@ class OSMGraphicsView(QGraphicsView):
         self.network_manager = NetworkAccessManager(self, max_concurrent=5)
         self.network_manager.tile_loaded.connect(self._onTileLoaded)
         self.tile_cache = {}
+        self._last_view_bbox = None
+        self._move_threshold = 50  # Minimum 50 pixels de déplacement avant refresh
+        self._last_mouse_pos = None
 
         self.setupAttribution()
 
@@ -104,7 +108,17 @@ class OSMGraphicsView(QGraphicsView):
 
         self.scene_items = []
         self.scene_labels = []
-        self.scene_connections = []
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        # print("🖥️ showEvent déclenché")  # DEBUG
+
+        if not self._initialized:
+            # Center on straight of Ormuz
+            # self.centerOnTile(42, 27, 6)
+            self._initialized = True
+
+        self.viewChanged.emit()
 
     def onItemsLoaded(self, count):
         """Quand des éléments sont chargés"""
@@ -136,16 +150,6 @@ class OSMGraphicsView(QGraphicsView):
                 except Exception as e:
                     print(f"❌ draw error {item.name}: {e}")
 
-        # Dessiner les connexions
-        self.renderConnections()
-
-    def renderConnections(self):
-        """Affiche toutes les connexions"""
-        for connection in self.item_manager.connections:
-            line = connection.draw(self)
-            self.scene.addItem(line)
-            self.scene_connections.append(line)
-
     def clearSceneItems(self):
         """Nettoie tous les éléments graphiques"""
         for item in self.scene_items:
@@ -154,13 +158,9 @@ class OSMGraphicsView(QGraphicsView):
         for label in self.scene_labels:
             if label.scene():
                 self.scene.removeItem(label)
-        for conn in self.scene_connections:
-            if conn.scene():
-                self.scene.removeItem(conn)
 
         self.scene_items.clear()
         self.scene_labels.clear()
-        self.scene_connections.clear()
 
     def updateMarkers(self):
         """Recalcule la position des marqueurs après changement de zoom"""
@@ -205,22 +205,56 @@ class OSMGraphicsView(QGraphicsView):
         """
         Retourne (min_lon, min_lat, max_lon, max_lat) de la zone visible.
         """
-        # Récupérer le rectangle visible dans la scène
-        scene_rect = self.mapToScene(self.viewport().rect()).boundingRect()
-
-        # Les coordonnées de la scène sont en degrés (lat/lon)
-        # topLeft = (min_x, max_y) -> (min_lon, max_lat)
-        # bottomRight = (max_x, min_y) -> (max_lon, min_lat)
-
-        min_lon = scene_rect.left()
-        max_lon = scene_rect.right()
-        max_lat = scene_rect.top()
-        min_lat = scene_rect.bottom()
-
-        if min_lon > max_lon or min_lat > max_lat:
+        scene = self.scene
+        if not scene:
+            print("❌ getVisibleBoundingBox: No scene")
             return None
 
+        scene_rect = scene.sceneRect()
+        if scene_rect.isEmpty():
+            print("❌ getVisibleBoundingBox: SceneRect is empty (0,0,0,0)")
+            # return (-180, -90, 180, 90)   # World
+            return None
+
+        view_rect = self.viewport().rect()
+        if view_rect.width() <= 0 or view_rect.height() <= 0:
+            print("❌ getVisibleBoundingBox: Viewport size is 0")
+            return None
+
+        scene_view_rect = self.mapToScene(view_rect).boundingRect()
+
+        if scene_view_rect.isEmpty():
+            print("❌ getVisibleBoundingBox: MapToScene returns nothing")
+            return None
+
+        min_tile_x = scene_view_rect.left() / self.tile_size
+        min_tile_y = scene_view_rect.top() / self.tile_size
+        max_tile_x = scene_view_rect.right() / self.tile_size
+        max_tile_y = scene_view_rect.bottom() / self.tile_size
+
+        max_lat, min_lon = self.tileToLatLon(min_tile_x, min_tile_y, self.zoom)
+        min_lat, max_lon = self.tileToLatLon(max_tile_x, max_tile_y, self.zoom)
+        if min_lon >= max_lon or min_lat >= max_lat:
+            print(
+                f"❌ Invalid BBox: min({min_lat}, {min_lon}) >= max({max_lat}, {max_lon})"
+            )
+            return None
+
+        # Debug
+        # print(f"Pixels: {scene_view_rect.left():.0f}, {scene_view_rect.top():.0f}")
+        # print(f"Tuiles: [{min_tile_x:.2f}, {min_tile_y:.2f}] -> [{max_tile_x:.2f}, {max_tile_y:.2f}]")
+        # print(f"Degrés: Lon[{min_lon:.2f}, {max_lon:.2f}], Lat[{min_lat:.2f}, {max_lat:.2f}]")
+
         return (min_lon, min_lat, max_lon, max_lat)
+
+    @staticmethod
+    def tileToLatLon(x_tile, y_tile, zoom):
+        """Convertit une coordonnée de tuile en lat/lon"""
+        n = 2**zoom
+        lon = x_tile / n * 360.0 - 180.0
+        lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * y_tile / n)))
+        lat = math.degrees(lat_rad)
+        return lat, lon
 
     def calculateBestZoom(self, south, north, west, east):
         """
@@ -251,7 +285,7 @@ class OSMGraphicsView(QGraphicsView):
                 raise ValueError(f"Impossible to parse WKB: {e}")
 
         if wkb_geometry is None:
-            raise ValueError("La géométrie ne peut pas être None")
+            raise ValueError("Geometry must not be None")
 
         if hasattr(wkb_geometry, "x") and hasattr(wkb_geometry, "y"):
             lon = wkb_geometry.x
@@ -334,7 +368,7 @@ class OSMGraphicsView(QGraphicsView):
         """
         Determine which time zones should be displayed with horizontal rotation.
         Calculate the area of the visible part of the scene and for each coordinate x, y
-        calculate the rounded coordinates with x % n_tiles и world_offset = x - (x % n_tiles).
+        calculate the rounded coordinates with x % n_tiles and world_offset = x - (x % n_tiles).
         """
         rect = self.mapToScene(self.viewport().rect()).boundingRect()
         x_min = int(rect.left() // self.tile_size)
@@ -342,6 +376,7 @@ class OSMGraphicsView(QGraphicsView):
         y_min = int(rect.top() // self.tile_size)
         y_max = int(rect.bottom() // self.tile_size) + 1
         n_tiles = 2**self.zoom
+        # print(f"Viewport: x[{x_min}, {x_max}] y[{y_min}, {y_max}] zoom{self.zoom}")
 
         for x in range(x_min, x_max + 1):
             wrapped_x = x % n_tiles
@@ -353,7 +388,6 @@ class OSMGraphicsView(QGraphicsView):
                 if key not in self.tiles:
                     # self.preLoadTile(wrapped_x, y, self.zoom, world_offset)
                     self.loadTile(wrapped_x, y, self.zoom, world_offset)
-        self.viewChanged.emit()
 
     def loadTile(self, x, y, z, world_offset=0):
         """
@@ -409,6 +443,8 @@ class OSMGraphicsView(QGraphicsView):
           - Calculate a new level of the zoom, update the stage dimensions and center.
           - After loading new trays for a new tooth, the old ones disappear smoothly.
         """
+        super().wheelEvent(event)
+        # print("🔍 wheelEvent déclenché")  # DEBUG
 
         visibleRect = self.mapToScene(self.viewport().rect()).boundingRect()
         sceneRect = self.scene.sceneRect()
@@ -443,6 +479,7 @@ class OSMGraphicsView(QGraphicsView):
         self.updateMarkers()
 
         print(f"ZOOM: {self.zoom}")
+        self.viewChanged.emit()
 
     def cleanupOldTiles(self, items):
         for item in items:
@@ -522,6 +559,37 @@ class OSMGraphicsView(QGraphicsView):
 
         self.updateMarkers()
 
+    def centerOnTile(self, x_tile, y_tile, zoom):
+        # TODO Ne fonctionne pas correctement
+        """
+        Centre la vue sur une tuile spécifique.
+        """
+        n = 2**zoom
+        min_lon = x_tile / n * 360.0 - 180.0
+        max_lon = (x_tile + 1) / n * 360.0 - 180.0
+
+        min_lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * (y_tile + 1) / n)))
+        max_lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * y_tile / n)))
+        min_lat = math.degrees(min_lat_rad)
+        max_lat = math.degrees(max_lat_rad)
+
+        padding = 0.1
+        scene_rect = QRectF(
+            min_lon - padding,
+            min_lat - padding,
+            (max_lon - min_lon) + 2 * padding,
+            (max_lat - min_lat) + 2 * padding,
+        )
+
+        self.scene.setSceneRect(scene_rect)
+
+        center_lon = (min_lon + max_lon) / 2
+        center_lat = (min_lat + max_lat) / 2
+        self.centerOn(center_lon, center_lat)
+
+        tile_rect = QRectF(min_lon, min_lat, max_lon - min_lon, max_lat - min_lat)
+        self.fitInView(tile_rect, Qt.AspectRatioMode.KeepAspectRatio)
+
     def isNearMapBoundary(self, margin=50):
         # We get a visible area in the scene coordinates
         visibleRect = self.mapToScene(self.viewport().rect()).boundingRect()
@@ -537,12 +605,25 @@ class OSMGraphicsView(QGraphicsView):
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
+        # print("📍 mouseMoveEvent déclenché")  # DEBUG
+
+        current_pos = event.position().toPoint()
+
+        if self._last_mouse_pos:
+            distance = (current_pos - self._last_mouse_pos).manhattanLength()
+
+            if distance < self._move_threshold:
+                return
+
+        self._last_mouse_pos = current_pos
 
         # Arrêter le timer précédent
         self.update_timer.stop()
 
         # Redémarrer avec délai de 200ms
         self.update_timer.start(200)
+
+        self.viewChanged.emit()
 
     def _delayedUpdateTiles(self):
         """Méthode appelée après le debounce"""

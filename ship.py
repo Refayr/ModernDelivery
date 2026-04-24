@@ -1,6 +1,7 @@
+from PySide6.QtGui import QColor
+
 from plotableitem import PlotableItem
 from dbitem import DBItem
-from PySide6.QtGui import QColor
 
 
 class Ship(DBItem, PlotableItem):
@@ -9,7 +10,7 @@ class Ship(DBItem, PlotableItem):
     def __init__(self, id, name, wkb_geometry, heading, capacity, desc, ship_type):
         DBItem.__init__(self, id, name, wkb_geometry)
         PlotableItem.__init__(
-            self, id, name, wkb_geometry, svg="res/img/ferry_terminal.svg", scale=500.0
+            self, id, name, wkb_geometry, img="res/img/ferry32.png", size=30.0
         )
 
         # id = imo
@@ -37,6 +38,7 @@ class Ship(DBItem, PlotableItem):
 
     @classmethod
     def fromDbRow(cls, row):
+        item_id = row["imo"]
         wkb_data = row.get("wkb_geometry")
         wkb_bytes = None
 
@@ -66,7 +68,7 @@ class Ship(DBItem, PlotableItem):
                 wkb_bytes = None
 
         return cls(
-            id=row["imo"],
+            id=item_id,
             name="",
             wkb_geometry=wkb_bytes,
             heading=row.get("heading"),
@@ -99,8 +101,6 @@ class Ship(DBItem, PlotableItem):
 
         query, values = cls.sqlQuery(min_lon, min_lat, max_lon, max_lat)
 
-        total_count = 0
-
         success, results = db_connector.executeQuery(query, values)
 
         new_items = []
@@ -113,9 +113,6 @@ class Ship(DBItem, PlotableItem):
 
                     new_items.append(item)
                 except Exception as e:
-                    print(f"Error while parsing item {item_id}: {e}")
-
-            # Debug optionnel
-            # print(f"✅ {item_type}: {len(new_items)} items chargés (zone visible)")
+                    print(f"Error while parsing item {row["imo"]}: {e}")
 
         return True, new_items

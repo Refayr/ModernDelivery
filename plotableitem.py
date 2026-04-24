@@ -1,6 +1,21 @@
+import os
+
+from PySide6.QtCore import Qt
 from PySide6.QtSvgWidgets import QGraphicsSvgItem
-from PySide6.QtWidgets import QGraphicsSimpleTextItem, QGraphicsScene
-from PySide6.QtGui import QBrush, QPen, QColor, QFont
+from PySide6.QtWidgets import (
+    QGraphicsSimpleTextItem,
+    QGraphicsScene,
+    QGraphicsEllipseItem,
+    QGraphicsItem,
+    QGraphicsPixmapItem,
+)
+from PySide6.QtGui import (
+    QBrush,
+    QPen,
+    QColor,
+    QFont,
+    QPixmap,
+)
 from abstractitem import AbstractItem
 from osm_graphics_view import OSMGraphicsView
 
@@ -13,14 +28,22 @@ class PlotableItem(AbstractItem):
         id,
         name,
         wkb_geometry,
-        svg="res/img/transport_marina.svg",
-        scale=1.0,
+        img="res/img/marina32.marina32.png",
+        size=30.0,
     ):
         super().__init__(id, name, wkb_geometry)
         self.sceneItem = None
-        self.svgPath = svg
-        self.scaleFactor = scale
+        self.img = img
+        self.size = size
         self.labelItem = None
+
+        # print(f"SVG Path: {self.svgPath}")
+        # print(f"File exists: {os.path.exists(self.svgPath)}")
+
+        # if os.path.exists(self.svgPath):
+        #     with open(self.svgPath, "r") as f:
+        #         content = f.read()[:200]
+        #         print(f"SVG content preview: {content}")
 
     def plot(self, osmGraphicsView: OSMGraphicsView) -> QGraphicsSvgItem:
         """Draw the marker on the map"""
@@ -28,24 +51,40 @@ class PlotableItem(AbstractItem):
         x_tile, y_tile = osmGraphicsView.geometryToTile(
             self.geometry, osmGraphicsView.zoom
         )
+        # print(f"🎯 Plotting {self.id} at {x_tile}, {y_tile}")
+
         x_pix = x_tile * osmGraphicsView.tile_size
         y_pix = y_tile * osmGraphicsView.tile_size
+        # print(f"🎯 Plotting {self.id} at {x_pix}, {y_pix}")
 
-        marker = QGraphicsSvgItem(self.svgPath)
-        if marker.boundingRect().isEmpty():
-            print(
-                f"⚠️ SVG loading error: {self.svgPath} pour {self.name}. Reverting to fallback."
-            )
-            # Fallback if invalid SVG
-            marker = QGraphicsEllipseItem(x_pix - 5, y_pix - 5, 10, 10)
-            marker.setBrush(QBrush(self.getColor()))
-            marker.setPen(QPen(QColor(255, 255, 255), 1))
-        else:
-            svgRect = marker.boundingRect()
-            newWidth = svgRect.width() * self.scaleFactor
-            newHeight = svgRect.height() * self.scaleFactor
-            marker.setPos(x_pix - newWidth / 2, y_pix - newHeight / 2)
-        marker.setZValue(10)  # Au-dessus des tuiles
+        # marker = QGraphicsSvgItem(self.img)
+        # if marker.boundingRect().isEmpty() or marker.boundingRect().width() == 0:
+        #     print(
+        #         f"⚠️ SVG loading error: {self.svgPath} pour {self.name}. Reverting to fallback."
+        #     )
+        #     # Fallback if invalid SVG
+        #     marker = QGraphicsEllipseItem(
+        #         x_pix - self.size / 2, y_pix - self.size / 2, 10, 10
+        #     )
+        #     marker.setBrush(QBrush(self.getColor()))
+        #     marker.setPen(QPen(QColor(255, 255, 255), 1))
+        # else:
+        #     svgRect = marker.boundingRect()
+        #     scale = self.size / max(svgRect.width(), svgRect.height())
+        #     marker.setScale(scale)
+
+        #     newWidth = svgRect.width() * scale
+        #     newHeight = svgRect.height() * scale
+        #     marker.setPos(x_pix - newWidth / 2, y_pix - newHeight / 2)
+        pixmap = QPixmap(self.img)
+        pixmap = pixmap.scaled(
+            self.size, self.size, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+
+        marker = QGraphicsPixmapItem(pixmap)
+        marker.setPos(x_pix - self.size / 2, y_pix - self.size / 2)
+
+        marker.setZValue(1000)
         marker.setToolTip(self.getTooltip())
 
         return marker

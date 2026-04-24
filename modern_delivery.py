@@ -64,9 +64,6 @@ class ModernDelivery(QApplication):
             return
 
         try:
-            # self.item_manager.loadSeaportsFromDb(self.db_connector)
-            # self.item_manager.loadShipsFromDb(self.db_connector)
-            # self.item_manager.loadConnectionsFromDb(self.db_connector)
             success, count = self.item_manager.loadVisibleItemsFromDb(
                 self.db_connector, -180.0, -90.0, 180.0, 90.0
             )
@@ -105,7 +102,7 @@ class ModernDelivery(QApplication):
             if not self.mainWindow:
                 self.createMainWindow()
 
-            self.initializeData()
+            # self.initializeData()
 
             self.refresh_timer.start()
 
@@ -138,6 +135,7 @@ class ModernDelivery(QApplication):
         QTimer.singleShot(
             500, self.refreshVisibleData
         )  # Attend 500ms après le dernier mouvement
+        delattr(self, "_pending_refresh")
 
     def onPeriodicRefresh(self):
         """Appelé toutes les 30 secondes"""
@@ -157,22 +155,45 @@ class ModernDelivery(QApplication):
         mapView = self.mainWindow.mapView
 
         try:
-            bbox = mapView.getVisibleBoundingBox()
-            if not bbox:
+            current_bbox = mapView.getVisibleBoundingBox()
+            if not current_bbox:
                 return
-            min_lon, min_lat, max_lon, max_lat = bbox
+            if hasattr(self, "_last_loaded_bbox"):
+                last_bbox = self._last_loaded_bbox
+
+                min_lon_diff = abs(current_bbox[0] - last_bbox[0])
+                min_lat_diff = abs(current_bbox[1] - last_bbox[1])
+                max_lon_diff = abs(current_bbox[2] - last_bbox[2])
+                max_lat_diff = abs(current_bbox[3] - last_bbox[3])
+
+                if (
+                    min_lon_diff < 0.05
+                    and min_lat_diff < 0.05
+                    and max_lon_diff < 0.05
+                    and max_lat_diff < 0.05
+                ):
+                    # print("🚫 BBox trop proche, ignoré")
+                    return
+
+            self._last_loaded_bbox = current_bbox
+
+            min_lon, min_lat, max_lon, max_lat = current_bbox
         except AttributeError:
             bbox = self.calculateViewBbox(mapView)
             if not bbox:
                 return
             min_lon, min_lat, max_lon, max_lat = bbox
 
+        # print(
+        #     f"Zone: lon[{min_lon:.2f}, {max_lon:.2f}] lat[{min_lat:.2f}, {max_lat:.2f}]"
+        # )
         success, count = self.item_manager.loadVisibleItemsFromDb(
             self.db_connector, min_lon, min_lat, max_lon, max_lat
         )
 
         if success:
             self.mainWindow.mapView.renderItems()
+
             self.signals.data_refreshed.emit(count)
             self.mainWindow.statusBar().showMessage(f"🔄 {count} items refreshed", 2000)
         else:
@@ -224,6 +245,10 @@ class ModernDelivery(QApplication):
 
         self.mainWindow = MainWindow(None, self.item_manager)
         self.mainWindow.setWindowTitle("MapView - ModernDelivery")
+
+        # if hasattr(self.mainWindow, "mapView"):
+        #     # Center on straight of Ormuz
+        #     self.mainWindow.mapView.centerOnTile(42, 27, 6)
 
     def getDbConnector(self):
         """Retourne le connecteur de base de données"""

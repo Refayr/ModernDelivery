@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 from typing import Optional, Any
 from shapely import wkb  # Pour lire le WKB (Well-Known Binary) retourné par Qt
@@ -21,6 +22,8 @@ class AbstractItem(ABC):
             self.geometry = None
 
     def __eq__(self, other):
+        if not isinstance(other, AbstractItem):
+            return False
         return self.id == other.id
 
     @property
@@ -150,11 +153,6 @@ class AbstractItem(ABC):
         min_lon, min_lat = self.tileToLatLon(x_tile, y_tile, zoom)
         max_lon, max_lat = self.tileToLatLon(x_tile + 1, y_tile + 1, zoom)
         return min_lon, min_lat, max_lon, max_lat
-
-    def __eq__(self, other):
-        if not isinstance(other, AbstractItem):
-            return False
-        return self.id == other.id
 
     @staticmethod
     def parseCoordinate(coord_str):

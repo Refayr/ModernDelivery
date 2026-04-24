@@ -95,7 +95,7 @@ class DBLoginDialog(QDialog):
         layout.addWidget(self.status_label)
 
     def loadSavedCredentials(self):
-        success, result = self.credentials_storage.load_credentials()
+        success, result = self.credentials_storage.loadCredentials()
         if success:
             self.host_input.setText(result["host"])
             self.port_input.setValue(result["port"])

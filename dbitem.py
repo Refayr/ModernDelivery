@@ -26,8 +26,8 @@ class DBItem(AbstractItem):
                 ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
             )
         """
-        table_name = "nodes"
-        query_str = sql_template.format(table=table_name)
+        table_name = "ships"
+        query_str = query_str.format(table=table_name)
 
         return query_str, (min_lon, min_lat, max_lon, max_lat)
 
