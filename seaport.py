@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from PySide6.QtGui import QColor
 
 from plotableitem import PlotableItem
@@ -13,22 +12,10 @@ class Seaport(DBItem, PlotableItem):
         wkb_geometry,
         country,
         img="res/img/marina32.png",
-        size=30.0,
+        size=15.0,
     ):
         DBItem.__init__(self, id, name, wkb_geometry)
         PlotableItem.__init__(self, id, name, wkb_geometry, img, size)
-=======
-from plotableitem import PlotableItem
-from node import Node
-
-
-class Seaport(Node, PlotableItem):
-    def __init__(
-        self, id, name, lat, lon, country, svg="res/img/transport_marina.svg", scale=1.0
-    ):
-        super(Node, self).__init__(id, name, lat, lon, active=True)
-        super(PlotableItem, self).__init__(id, name, lat, lon, svg, scale)
->>>>>>> a4a8dd7 (Initial version of the map viewer)
 
         self.country = country
 
@@ -36,12 +23,11 @@ class Seaport(Node, PlotableItem):
         return QColor(0, 100, 255)
 
     def getTooltip(self):
-<<<<<<< HEAD
         return f"Port: {self.name}\nCountry: {self.country}\nID: {self.id}"
 
     @classmethod
     def fromDbRow(cls, row):
-        item_id = row["id"]
+        item_id = row["seaport_id"]
         wkb_data = row.get("wkb_geometry")
         wkb_bytes = None
 
@@ -72,19 +58,17 @@ class Seaport(Node, PlotableItem):
 
         return cls(
             id=item_id,
-            name=row.get("name"),
+            name=row.get("seaport_name"),
             wkb_geometry=wkb_bytes,
-            country=row.get("country"),
+            country=row.get("country_name"),
         )
 
     @classmethod
     def sqlQuery(cls, min_lon, min_lat, max_lon, max_lat):
         query_str = """
-            SELECT s.id, s.name, wkb_geometry, country, active
+            SELECT seaport_id, seaport_name, wkb_geometry, country_name
             FROM seaports s
-            JOIN nodes n ON node = n.ogc_fid
-            JOIN countries c ON country = c.id
-            WHERE n.active = true
+            JOIN countries c ON s.country_id = c.country_id
             AND ST_Intersects(
                 wkb_geometry,
                 ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
@@ -116,20 +100,6 @@ class Seaport(Node, PlotableItem):
 
                     new_items.append(item)
                 except Exception as e:
-                    print(f"Error while parsing item {row["id"]}: {e}")
+                    print(f"Error while parsing item {row["seaport_id"]}: {e}")
 
         return True, new_items
-=======
-        return f"Port: {self.name}\nCountry: {self.country_name}\nID: {self.id}"
-
-    @classmethod
-    def fromDbRow(cls, row):
-        return cls(
-            id=row["id"],
-            name=row["name"],
-            lat=row["latitude"],
-            lon=row["longitude"],
-            country_name=row["country_name"],
-            active=bool(row.get("active", True)),
-        )
->>>>>>> a4a8dd7 (Initial version of the map viewer)
