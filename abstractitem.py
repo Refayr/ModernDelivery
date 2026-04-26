@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Any
 from shapely import wkb  # Pour lire le WKB (Well-Known Binary) retourné par Qt
 from shapely.geometry import Point
+import re
 
 
 class AbstractItem(ABC):

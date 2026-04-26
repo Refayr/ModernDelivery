@@ -94,7 +94,7 @@ class Ship(DBItem, PlotableItem):
 
     @classmethod
     def loadVisibleItemsFromDb(cls, db_connector, min_lon, min_lat, max_lon, max_lat):
-      """
+        """
         Charge les Ships, Seaports, Nodes et Connections dans la zone visible.
         Remplace les données existantes uniquement pour ces types dans cette zone.
         """

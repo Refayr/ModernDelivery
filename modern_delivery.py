@@ -1,4 +1,5 @@
 import sys
+
 from PySide6.QtCore import Signal, QObject, QTimer
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from PySide6.QtCore import QMargins
@@ -37,6 +38,7 @@ class ModernDelivery(QApplication):
         self.credentials_storage = CredentialStorage()
 
         self.mainWindow = None
+        self._last_loaded_bbox = None
 
         # Timer
         self.refresh_timer = QTimer()
@@ -99,6 +101,19 @@ class ModernDelivery(QApplication):
         if success:
             self.signals.db_connected.emit()
 
+            import_success, import_msg = self.db_connector.initializeSchemaIfEmpty()
+
+            if not import_success:
+                self.signals.error.emit(f"DB init error: {import_msg}")
+                QMessageBox.critical(
+                    None,
+                    "Error",
+                    f"Unable to init DB:\n{import_msg}",
+                )
+                self.db_connector.disconnect()
+                self.showDbLogin()
+                return
+
             if not self.mainWindow:
                 self.createMainWindow()
 
@@ -158,9 +173,9 @@ class ModernDelivery(QApplication):
             current_bbox = mapView.getVisibleBoundingBox()
             if not current_bbox:
                 return
-            if hasattr(self, "_last_loaded_bbox"):
+            # if hasattr(self, "_last_loaded_bbox"):
+            if self._last_loaded_bbox is not None:
                 last_bbox = self._last_loaded_bbox
-
                 min_lon_diff = abs(current_bbox[0] - last_bbox[0])
                 min_lat_diff = abs(current_bbox[1] - last_bbox[1])
                 max_lon_diff = abs(current_bbox[2] - last_bbox[2])

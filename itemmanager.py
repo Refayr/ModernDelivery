@@ -1,4 +1,5 @@
 from PySide6.QtCore import QObject, Signal
+
 from typing import List, Dict, Type
 from abstractitem import AbstractItem
 from ship import Ship

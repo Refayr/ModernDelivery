@@ -76,7 +76,7 @@ class DBLoginDialog(QDialog):
         button_layout = QHBoxLayout()
 
         self.test_button = QPushButton("Test connection")
-        self.test_button.clicked.connect(self.test_connection)
+        self.test_button.clicked.connect(self.testConnection)
         button_layout.addWidget(self.test_button)
 
         self.cancel_button = QPushButton("Cancel")
@@ -84,7 +84,7 @@ class DBLoginDialog(QDialog):
         button_layout.addWidget(self.cancel_button)
 
         self.ok_button = QPushButton("Connect")
-        self.ok_button.clicked.connect(self.accept_connection)
+        self.ok_button.clicked.connect(self.acceptConnection)
         self.ok_button.setDefault(True)
         button_layout.addWidget(self.ok_button)
 

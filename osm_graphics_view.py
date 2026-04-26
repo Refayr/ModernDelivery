@@ -22,7 +22,6 @@ from shapely import wkb
 from searchwidget import SearchWidget
 from network_access_manager import NetworkAccessManager
 from abstractitem import AbstractItem
-from itemmanager import ItemManager
 
 
 def check_and_extract_numbers(filename):
